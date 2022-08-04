@@ -74,6 +74,18 @@
         <tr class="text-left">
           <td>{{ strings['upload_url'] }}</td>
           <td>{{ uploadPath }}</td>
+          <td></td>
+        </tr>
+        <tr class="text-left">
+          <td>{{ strings['download_url'] }}</td>
+          <td>
+            {{uploadLink}}
+          </td>
+          <td>
+            <v-btn @click="copyClipboard(uploadLink)">
+              <v-icon >{{ icons.mdiContentCopy }}</v-icon>
+            </v-btn>
+          </td>
         </tr>
         </tbody>
       </v-simple-table>
@@ -109,7 +121,7 @@ import * as utils from '@/utils';
 import * as pipingUiUtils from "@/piping-ui-utils";
 import {globalStore} from "@/vue-global";
 import {stringsByLang} from "@/strings";
-import {mdiAlert, mdiCancel, mdiCheck, mdiChevronDown, mdiCloseCircle} from "@mdi/js";
+import {mdiAlert, mdiCancel, mdiCheck, mdiChevronDown, mdiCloseCircle,mdiContentCopy} from "@mdi/js";
 import AsyncComputed from 'vue-async-computed-decorator';
 import type {Protection, VerificationStep, VerifiedParcel} from "@/datatypes";
 import VerificationCode from "@/components/VerificationCode.vue";
@@ -160,6 +172,7 @@ export default class DataUploader extends Vue {
     mdiCloseCircle,
     mdiCheck,
     mdiCancel,
+    mdiContentCopy,
   };
 
   private get progressPercentage(): number | null {
@@ -178,6 +191,10 @@ export default class DataUploader extends Vue {
 
   private get uploadPath(): string {
     return urlJoin(this.props.serverUrl, this.props.secretPath);
+  }
+
+  private get uploadLink(): string {
+    return window.location.protocol+'//'+window.location.host+window.location.pathname+"?sec="+encodeURIComponent(this.props.secretPath);
   }
 
   @AsyncComputed()
@@ -371,6 +388,23 @@ export default class DataUploader extends Vue {
   private cancelUpload(): void {
     this.xhr.abort();
     this.canceled = true;
+  }
+
+  private copyClipboard(val:string):void{
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(val).then(function() {
+      /* clipboard successfully set */
+      }, function() {
+        /* clipboard write failed */
+      });
+    }else{
+      const elem = document.createElement('textarea');
+      elem.value = val;
+      document.body.appendChild(elem);
+      elem.select();
+      document.execCommand('copy');
+      document.body.removeChild(elem);
+    }
   }
 }
 </script>

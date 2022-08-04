@@ -73,6 +73,8 @@
                     class="ma-0 pa-0 readable-font"
                     clearable
                     :clear-icon="icons.mdiClose"
+                    :prepend-icon="icons.mdiRefresh"
+                    @click:prepend="randomSecretPath"
         >
           <template v-slot:item="{ index, item }">
             <span class="readable-font">{{ item }}</span>
@@ -86,7 +88,6 @@
             </v-list-item-action>
           </template>
         </v-combobox>
-
         <!-- Secret path suggestion  -->
         <div v-if="sendOrGet === 'send' && suggestedSecretPaths.length !== 0" style="text-align: right; margin-bottom: 1.5em;">
           <v-chip v-for="suggestedSecretPath in suggestedSecretPaths"
@@ -209,7 +210,7 @@ const DataViewer = () => import("@/components/DataViewer.vue");
 const DataDownloader = () => import('@/components/DataDownloader.vue');
 import {DataDownloaderProps} from "@/components/DataDownloader.vue";
 import * as t from 'io-ts';
-import {mdiUpload, mdiDownload, mdiDelete, mdiFileFind, mdiClose, mdiEye, mdiEyeOff, mdiKey, mdiShieldHalfFull, mdiText} from "@mdi/js";
+import {mdiUpload, mdiDownload, mdiDelete, mdiFileFind, mdiClose, mdiEye, mdiEyeOff, mdiKey, mdiShieldHalfFull, mdiText, mdiRefresh} from "@mdi/js";
 
 import {keys} from "@/local-storage-keys";
 import {globalStore} from "@/vue-global";
@@ -326,6 +327,7 @@ export default class PipingUI extends Vue {
     mdiKey,
     mdiShieldHalfFull,
     mdiText,
+    mdiRefresh
   };
 
   // for language support
@@ -390,41 +392,42 @@ export default class PipingUI extends Vue {
   }
 
   private updateRandomStrs() {
-    this.randomStrs[0] = randomStr(3, chars.nonConfusing);
+    this.randomStrs[0] = randomStr(6, chars.nonConfusing);
   }
-
-  private get suggestedSecretPaths(): string[] {
+  private getSuggestedSecretPaths(): string[] {
     const candidates: string[] = (() => {
-      if ((!this.isTextMode && this.files.length === 0) || (this.isTextMode && this.inputText === '')) {
-        // NOTE: This is for simplicity of UI
-        //       Not show suggested secret path on initial status
-        return [];
-      } else if (this.isTextMode) {
-        return [...this.randomStrs.map(s => `${s}.txt`), ...this.randomStrs];
-      } else if (this.files.length === 1) {
-        const fileName = this.files[0].filename;
-        const {ext} = baseAndExt(fileName);
-        return [
-          fileName,
-          ...this.randomStrs.map(s => `${s}${ext}`),
-          ...this.randomStrs,
-        ];
-      } else if(this.files.length > 1) {
-        if(this.secretPath.endsWith('.zip')) {
+        if ((!this.isTextMode && this.files.length === 0) || (this.isTextMode && this.inputText === '')) {
+          // NOTE: This is for simplicity of UI
+          //       Not show suggested secret path on initial status
           return [];
-        } else {
+        } else if (this.isTextMode) {
+          return [...this.randomStrs.map(s => `${s}.txt`), ...this.randomStrs];
+        } else if (this.files.length === 1) {
+          const fileName = this.files[0].filename;
+          const {ext} = baseAndExt(fileName);
           return [
-            ...(this.secretPath === '' ? [] : [`${this.secretPath}.zip`]),
-            ...this.randomStrs.map(s => `${s}.zip`),
+            fileName,
+            ...this.randomStrs.map(s => `${s}${ext}`),
             ...this.randomStrs,
           ];
+        } else if(this.files.length > 1) {
+          if(this.secretPath.endsWith('.zip')) {
+            return [];
+          } else {
+            return [
+              ...(this.secretPath === '' ? [] : [`${this.secretPath}.zip`]),
+              ...this.randomStrs.map(s => `${s}.zip`),
+              ...this.randomStrs,
+            ];
+          }
+        } else {
+          return this.randomStrs;
         }
-      } else {
-        return this.randomStrs;
-      }
-    })();
-
-    return candidates.filter(c => this.secretPath !== c);
+      })();
+      return candidates;
+  }
+  private get suggestedSecretPaths(): string[] {
+    return this.getSuggestedSecretPaths().filter(c => this.secretPath !== c);
   }
 
   private onEnablePasswordProtection(enable: boolean) {
@@ -448,6 +451,15 @@ export default class PipingUI extends Vue {
     const serverUrl = window.localStorage.getItem(keys.selectedServerUrl);
     if (serverUrl !== null) {
       this.serverUrl = serverUrl;
+    }else{
+      this.serverUrl = window.location.protocol+'//'+window.location.host+"/p";
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sec = urlParams.get('sec');
+    if(sec){
+      this.secretPath=sec;
+      this.sendOrGet="get";
     }
 
     // FIXME: Combobox is lazy to update v-model
@@ -652,6 +664,18 @@ export default class PipingUI extends Vue {
     this.secretPathHistory = this.secretPathHistory.filter(p => p !== path);
     // Save to local storage
     window.localStorage.setItem(keys.secretPathHistory, JSON.stringify(this.secretPathHistory));
+  }
+
+  private randomSecretPath():void{    
+    this.updateRandomStrs();
+    const ss=this.getSuggestedSecretPaths();
+    if (ss.length>=2){
+      this.secretPath=ss[ss.length-2];
+    }else if (ss.length==1){
+      this.secretPath=ss[0];
+    }else{
+      this.secretPath=this.randomStrs[0];
+    }
   }
 }
 
