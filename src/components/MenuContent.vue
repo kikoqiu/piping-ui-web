@@ -68,7 +68,7 @@ import enableDarkTheme from "@/enable-dark-theme";
 
 
 // Available languages
-type Language = 'en' | 'ja';
+type Language = 'en' | 'ja' | 'zh-CN';
 
 @Component
 export default class MenuContent extends Vue {
@@ -80,6 +80,7 @@ export default class MenuContent extends Vue {
   private availableLanguages: {lang: Language, str: string}[] = [
     {lang: 'en', str: 'English'},
     {lang: 'ja', str: '日本語'},
+    {lang: 'zh-CN', str: '中文'},
   ];
   // for language support
   private get strings() {

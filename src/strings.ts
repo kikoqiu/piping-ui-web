@@ -9,7 +9,9 @@ export function stringsByLang(language: string): typeof defaultStr {
     return en;
   } else if(language.startsWith("ja")) {
     return ja;
-  } else {
+  } else if(language.startsWith("zh-CN")) {
+    return cn;
+  }else {
     return defaultStr;
   }
 }
@@ -84,6 +86,7 @@ const en = {
 };
 const defaultStr = en;
 
+
 const ja: typeof defaultStr = {
   language: '言語 (Language)',
   dark_theme: 'ダークテーマ',
@@ -151,4 +154,75 @@ const ja: typeof defaultStr = {
   record_server_url: 'サーバーURLを記憶',
   record_secret_path: '転送パスを記憶',
   download_in_downloader: 'ダウンロード',
+} as const;
+
+
+
+const cn : typeof defaultStr =  {
+  language: 'Language',
+  dark_theme: '黑暗模式',
+  pwa_update: '更新',
+  version: `Version: ${VERSION}`,
+  view_on_github: 'GitHub',
+  open_source_licenses: '许可证',
+  close: "关闭",
+  send: '发送',
+  get: '下载',
+  text_mode: '文本模式',
+  text_placeholder: '文本',
+  server_url: '服务器地址',
+  secret_path: '秘密路径',
+  secret_path_placeholder: '例如 mypath374',
+  drop_a_file_here_or_browse: '拖到这里或者点击 <span class=\'filepond--label-action\'>浏览</span>',
+  protect_with_password: '密码保护',
+  passwordless_protection: '自动验证保护',
+  password: '密码',
+  password_is_required: '请输入密码',
+  view: '查看',
+  download: '下载',
+  error_file_not_selected: '请选择文件',
+  error_secret_path_not_specified: '秘密路径未输入',
+  upload: '上传',
+  waiting_for_receiver: '等待接收...',
+  verification_code: '校验码',
+  verify_and_send: '确认发送',
+  key_exchange_error: (errorCode: KeyExchangeErrorCode): string => {
+    switch (errorCode) {
+      case "invalid_parcel_format":
+        return 'Parcel format 无效.';
+      case "different_key_exchange_version":
+        return 'Key exchange versions are different. 请升级\'s app.'
+      case "invalid_v1_parcel_format":
+        return "Parcel is an 无效的 V1 parcel";
+    }
+  },
+  sender_not_verified: '发送方校验失败',
+  upload_url: '上传路径',
+  compressing: '压缩中...',
+  encrypting: '加密中...',
+  data_uploader_xhr_onerror: async (p: {serverUrl: string}) => {
+    const utils = await utilsAsync();
+    const urlJoin = await urlJoinAsync();
+    const versionUrl = urlJoin(p.serverUrl, "/version");
+    return utils.sanitizeHtmlAllowingATag(`发送错误 The server might be < 0.9.4. Please check <a href="${versionUrl}" target="_blank">${versionUrl}</a>`);
+  },
+  data_uploader_xhr_upload_onerror: '上传错误',
+  cancel: '取消',
+  view_in_viewer: '查看',
+  download_url: '下载 URL',
+  waiting_for_sender: '等待发送方...',
+  decrypting: '解密中...',
+  copied: '已复制',
+  password_might_be_wrong: '密码错误',
+  reinput_password: '重新输入密码',
+  unlock: '解锁',
+  view_raw: '查看原始 raw',
+  xhr_status_error: (p: {status: number, response: string}) => {
+    return `Error (${p.status}): "${p.response}"`;
+  },
+  data_viewer_xhr_onerror: '下载错误',
+  save: '保存',
+  record_server_url: '记住服务器路径',
+  record_secret_path: '记住 secret path',
+  download_in_downloader: '下载',
 } as const;
