@@ -71,21 +71,19 @@
 
       <v-simple-table class="text-left">
         <tbody>
-        <tr class="text-left">
-          <td>{{ strings['upload_url'] }}</td>
-          <td>{{ uploadPath }}</td>
-          <td></td>
-        </tr>
-        <tr class="text-left">
+         <tr class="text-left">
           <td>{{ strings['download_url'] }}</td>
           <td>
             {{uploadLink}}
-          </td>
-          <td>
             <v-btn @click="copyClipboard(uploadLink)">
               <v-icon >{{ icons.mdiContentCopy }}</v-icon>
             </v-btn>
           </td>
+          <td rowspan="2"><vue-qr :text="uploadLink" :size="100" margin="5"></vue-qr></td>
+        </tr>
+        <tr class="text-left">
+          <td>{{ strings['upload_url'] }}</td>
+          <td>{{ uploadPath }}</td>
         </tr>
         </tbody>
       </v-simple-table>
@@ -127,7 +125,7 @@ import type {Protection, VerificationStep, VerifiedParcel} from "@/datatypes";
 import VerificationCode from "@/components/VerificationCode.vue";
 import {pipingUiAuthAsync} from "@/pipingUiAuthWithWebpackChunkName"
 import {type ActualFileObject} from "filepond";
-
+import VueQr from '../../node_modules/vue-qr/src/packages/vue-qr.vue'
 
 export type DataUploaderProps = {
   uploadNo: number,
@@ -141,6 +139,7 @@ export type DataUploaderProps = {
 @Component({
   components: {
     VerificationCode,
+    VueQr,
   },
 })
 export default class DataUploader extends Vue {
